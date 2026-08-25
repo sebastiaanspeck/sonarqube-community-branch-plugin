@@ -58,11 +58,10 @@ import FailedConditions from '~sq-server-commons/components/overview/FailedCondi
 import { IssueMeasuresCardInner } from '~sq-server-commons/components/overview/IssueMeasuresCardInner';
 import MeasuresCardNumber from '~sq-server-commons/components/overview/MeasuresCardNumber';
 import MeasuresCardPercent from '~sq-server-commons/components/overview/MeasuresCardPercent';
+import { MeasurementType, getMeasurementMetricKey } from '~shared/helpers/overview';
 import {
-  MeasurementType,
   QGStatusEnum,
   getConditionRequiredLabel,
-  getMeasurementMetricKey,
 } from '~sq-server-commons/utils/overview-utils';
 
 interface Props {
