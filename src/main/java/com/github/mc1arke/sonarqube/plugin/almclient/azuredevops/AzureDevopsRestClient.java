@@ -27,6 +27,7 @@ import com.github.mc1arke.sonarqube.plugin.almclient.azuredevops.model.Connectio
 import com.github.mc1arke.sonarqube.plugin.almclient.azuredevops.model.CreateCommentRequest;
 import com.github.mc1arke.sonarqube.plugin.almclient.azuredevops.model.CreateCommentThreadRequest;
 import com.github.mc1arke.sonarqube.plugin.almclient.azuredevops.model.GitPullRequestStatus;
+import com.github.mc1arke.sonarqube.plugin.almclient.azuredevops.model.GitStatusContext;
 import com.github.mc1arke.sonarqube.plugin.almclient.azuredevops.model.PullRequest;
 import com.github.mc1arke.sonarqube.plugin.almclient.azuredevops.model.PullRequestIteration;
 import com.github.mc1arke.sonarqube.plugin.almclient.azuredevops.model.PullRequestIterationList;
@@ -73,7 +74,11 @@ public class AzureDevopsRestClient implements AzureDevopsClient {
     @Override
     public void submitPullRequestStatus(String projectId, String repositoryName, int pullRequestId, GitPullRequestStatus status) throws IOException {
         String url = String.format("%s/%s/_apis/git/repositories/%s/pullRequests/%s/statuses?api-version=%s", apiUrl, encode(projectId), encode(repositoryName), pullRequestId, API_VERSION_PREVIEW);
+        LOGGER.info("Submitting Pull Request status to Azure Devops: pullRequestId={}, iterationId={}, state={}, genre={}, name={}", pullRequestId, status.getIterationId(), status.getState(),
+                Optional.ofNullable(status.getContext()).map(GitStatusContext::getGenre).orElse(null),
+                Optional.ofNullable(status.getContext()).map(GitStatusContext::getName).orElse(null));
         execute(url, "post", objectMapper.writeValueAsString(status), null);
+        LOGGER.info("Successfully submitted Pull Request status to Azure Devops for pullRequestId={}, iterationId={}", pullRequestId, status.getIterationId());
     }
 
     @Override
@@ -125,11 +130,23 @@ public class AzureDevopsRestClient implements AzureDevopsClient {
     public int retrievePullRequestIterationIdForCommit(String projectId, String repositoryName, int pullRequestId, String commitSha) throws IOException {
         String url = String.format("%s/%s/_apis/git/repositories/%s/pullRequests/%s/iterations?includeCommits=true&api-version=%s", apiUrl, encode(projectId), encode(repositoryName), pullRequestId, API_VERSION);
         PullRequestIterationList iterationList = Objects.requireNonNull(execute(url, "get", null, PullRequestIterationList.class));
-        return iterationList.getValue().stream()
+
+        LOGGER.info("Pull Request {} iterations returned by Azure Devops while matching commit {}: {}", pullRequestId, commitSha,
+                iterationList.getValue().stream()
+                        .map(iteration -> iteration.getId() + "=" + Optional.ofNullable(iteration.getSourceRefCommit()).map(Commit::getCommitId).orElse("<none>"))
+                        .toList());
+
+        Optional<Integer> matchedIterationId = iterationList.getValue().stream()
                 .filter(iteration -> iteration.getSourceRefCommit() != null && commitSha.equals(iteration.getSourceRefCommit().getCommitId()))
                 .mapToInt(PullRequestIteration::getId)
-                .findFirst()
-                .orElse(1);
+                .boxed()
+                .findFirst();
+
+        if (matchedIterationId.isEmpty()) {
+            LOGGER.warn("Could not find a Pull Request iteration for commit {} on Pull Request {}. Falling back to iteration 1 - the status may be posted against a stale iteration and not clear a Waiting build policy in Azure Devops.", commitSha, pullRequestId);
+        }
+
+        return matchedIterationId.orElse(1);
     }
 
     @Override

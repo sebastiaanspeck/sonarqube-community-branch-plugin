@@ -149,6 +149,8 @@ public class AzureDevOpsPullRequestDecorator extends DiscussionAwarePullRequestD
             String repositoryName = pullRequest.getRepository().getName();
             int pullRequestId = pullRequest.getId();
 
+            logger.info("Resolving Pull Request status target for pullRequestId={}, commitSha={}, doesSupportIterations={}", pullRequestId, analysis.getCommitSha(), pullRequest.doesSupportIterations());
+
             int iterationId = pullRequest.doesSupportIterations()
                     ? client.retrievePullRequestIterationIdForCommit(projectName, repositoryName, pullRequestId, analysis.getCommitSha())
                     : 1;
