@@ -19,9 +19,9 @@
  */
 
 import styled from '@emotion/styled';
+import { ButtonIcon, ButtonVariety, IconX, Text, cssVar } from '@sonarsource/echoes-react';
 import React, { ReactNode } from 'react';
 import { useIntl } from 'react-intl';
-import { ButtonIcon, ButtonVariety, IconX, Text } from '@sonarsource/echoes-react';
 import {
   Card,
   CheckIcon,
@@ -29,9 +29,9 @@ import {
   SubTitle,
   SubnavigationFlowSeparator,
 } from '~design-system';
+import useLocalStorage from '~shared/helpers/useLocalStorage';
 import { QGStatus } from '~shared/types/common';
 import { useCurrentUser } from '~sq-server-commons/context/current-user/CurrentUserContext';
-import useLocalStorage from '~shared/helpers/useLocalStorage';
 import { isLoggedIn } from '~sq-server-commons/types/users';
 import { QGStatusEnum } from '~sq-server-commons/utils/overview-utils';
 
@@ -97,8 +97,10 @@ export default function SonarLintAd({ status }: Readonly<Props>) {
 function TickLink({ className, children }: Readonly<{ children: ReactNode; className?: string }>) {
   return (
     <li className={className}>
-      <CheckIcon fill="iconTrendPositive" />
-      <Text className="sw-pl-1" isSubtle>{children}</Text>
+      <CheckIcon fill={cssVar('color-icon-success')} />
+      <Text className="sw-pl-1" isSubtle>
+        {children}
+      </Text>
     </li>
   );
 }

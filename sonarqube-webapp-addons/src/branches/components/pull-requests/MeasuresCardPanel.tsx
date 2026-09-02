@@ -18,28 +18,30 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import {
-  IconQuestionMark,
-  Text,
-  Tooltip,
-  TooltipSide
-} from '@sonarsource/echoes-react';
+import { IconQuestionMark, Text, Tooltip, TooltipSide } from '@sonarsource/echoes-react';
 import classNames from 'classnames';
 import * as React from 'react';
 import { useIntl } from 'react-intl';
+import { Card, SnoozeCircleIcon, TrendDownCircleIcon, TrendUpCircleIcon } from '~design-system';
 import {
-  Card,
-  SnoozeCircleIcon,
-  TrendDownCircleIcon,
-  TrendUpCircleIcon
-} from '~design-system';
+  GridContainer,
+  StyleMeasuresCard,
+  StyleMeasuresCardRightBorder,
+  StyledConditionsCard,
+} from '~shared/components/overview/BranchSummaryStyles';
+import { getBranchLikeQuery } from '~shared/helpers/branch-like';
+import { MeasurementType, getMeasurementMetricKey } from '~shared/helpers/overview';
 import { PullRequest } from '~shared/types/branch-like';
+import { MeasureEnhanced } from '~shared/types/measures';
 import { MetricKey, MetricType } from '~shared/types/metrics';
 import { getLeakValue } from '~sq-server-commons/components/measure/utils';
+import FailedConditions from '~sq-server-commons/components/overview/FailedConditions';
+import { IssueMeasuresCardInner } from '~sq-server-commons/components/overview/IssueMeasuresCardInner';
+import MeasuresCardNumber from '~sq-server-commons/components/overview/MeasuresCardNumber';
+import MeasuresCardPercent from '~sq-server-commons/components/overview/MeasuresCardPercent';
 import { DEFAULT_ISSUES_QUERY } from '~sq-server-commons/components/shared/utils';
 import { findMeasure } from '~sq-server-commons/helpers/measures';
 import { getComponentDrilldownUrl } from '~sq-server-commons/helpers/urls';
-import { getBranchLikeQuery } from '~shared/helpers/branch-like';
 import { formatMeasure } from '~sq-server-commons/sonar-aligned/helpers/measures';
 import {
   getComponentIssuesUrl,
@@ -47,22 +49,7 @@ import {
 } from '~sq-server-commons/sonar-aligned/helpers/urls';
 import { QualityGateStatusConditionEnhanced } from '~sq-server-commons/types/quality-gates';
 import { Component, QualityGate } from '~sq-server-commons/types/types';
-import { MeasureEnhanced } from '~shared/types/measures';
-import {
-  GridContainer,
-  StyleMeasuresCard,
-  StyleMeasuresCardRightBorder,
-  StyledConditionsCard,
-} from '~shared/components/overview/BranchSummaryStyles';
-import FailedConditions from '~sq-server-commons/components/overview/FailedConditions';
-import { IssueMeasuresCardInner } from '~sq-server-commons/components/overview/IssueMeasuresCardInner';
-import MeasuresCardNumber from '~sq-server-commons/components/overview/MeasuresCardNumber';
-import MeasuresCardPercent from '~sq-server-commons/components/overview/MeasuresCardPercent';
-import { MeasurementType, getMeasurementMetricKey } from '~shared/helpers/overview';
-import {
-  QGStatusEnum,
-  getConditionRequiredLabel,
-} from '~sq-server-commons/utils/overview-utils';
+import { QGStatusEnum, getConditionRequiredLabel } from '~sq-server-commons/utils/overview-utils';
 
 interface Props {
   component: Component;
@@ -100,7 +87,9 @@ export default function MeasuresCardPanel(props: React.PropsWithChildren<Props>)
     issueStatuses: 'ACCEPTED',
   });
 
-  const totalFailedConditions = conditions.filter((condition) => condition.level === QGStatusEnum.ERROR);
+  const totalFailedConditions = conditions.filter(
+    (condition) => condition.level === QGStatusEnum.ERROR,
+  );
 
   return (
     <Card className="sw-py-8 sw-px-6">
@@ -153,13 +142,7 @@ export default function MeasuresCardPanel(props: React.PropsWithChildren<Props>)
             disabled={component.needIssueSync}
             url={acceptedUrl}
             icon={
-              acceptedCount !== undefined && (
-                <SnoozeCircleIcon
-                  color={
-                    acceptedCount === '0' ? 'overviewCardDefaultIcon' : 'overviewCardWarningIcon'
-                  }
-                />
-              )
+              acceptedCount !== undefined && <SnoozeCircleIcon disabled={acceptedCount === '0'} />
             }
             footer={
               <Text isSubtle size="small">
