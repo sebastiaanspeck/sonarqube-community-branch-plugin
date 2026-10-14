@@ -22,7 +22,7 @@ import {
   notEntitled,
 } from '~shared/queries/entitlement-checks';
 import { EntitlementCheckFeatureKey } from '~shared/types/billing';
-import { PurchaseableFeature } from '~sq-server-commons/types/editions';
+import { PurchasableFeatureKey, PurchaseableFeature } from '~sq-server-commons/types/editions';
 
 export const useEntitlementCheckQuery = createQueryHook((params: EntitlementCheckParams) =>
   queryOptions({
@@ -47,7 +47,7 @@ export function useEntitlementChecksQuery(featureKeys: readonly EntitlementCheck
   });
 }
 
-export const usePurchasableFeature = createQueryHook((featureKey: string) =>
+export const usePurchasableFeature = createQueryHook((featureKey: PurchasableFeatureKey) =>
   queryOptions({
     queryKey: ['purchasable-feature', featureKey],
     queryFn: (): Promise<PurchaseableFeature[]> => Promise.resolve([]),
