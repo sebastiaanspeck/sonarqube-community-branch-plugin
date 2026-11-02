@@ -167,7 +167,7 @@ jobs:
         with:
           name: ${{ needs.prep.outputs.version }}
           tag_name: ${{ needs.prep.outputs.version }}
-          draft: true
+          draft: false
           files: |
             build/libs/*.jar
             build/ui/sonarqube-webapp.zip
