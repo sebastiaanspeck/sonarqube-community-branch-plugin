@@ -10,5 +10,10 @@ services:
   sonarqube:
     image: community-branch-plugin-integration-test:${SONARQUBE_VERSION}
     container_name: community-branch-plugin-it-sonarqube
+    # Always build the candidate from source. On a release commit .env selects
+    # release.Dockerfile, which downloads the published release assets; those
+    # don't exist until the release this test gates has been created.
+    build:
+      dockerfile: Dockerfile
   db:
     container_name: community-branch-plugin-it-postgres
